@@ -25,7 +25,7 @@ fill(voxels, function(i, j, k) {
   return 0
 })
 
-// Give the ndarray and BufferGeometry and it will fill it up
+// Give it a ndarray and BufferGeometry to populate
 var geometry = ndarrayGeometry(voxels, new THREE.BufferGeometry())
 
 // Create a new mesh from the geometry
