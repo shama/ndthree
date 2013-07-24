@@ -2,6 +2,7 @@ var createAOMesh = require('ao-mesher')
 
 module.exports = function(arr, geometry) {
   var vert_data = createAOMesh(arr)
+  if (!vert_data) return geometry
 
   var triangles = 12 * arr.shape[0] * arr.shape[1] * arr.shape[2]
   geometry.attributes = {
