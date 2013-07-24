@@ -29,7 +29,10 @@ fill(voxels, function(i, j, k) {
 var geometry = ndarrayGeometry(voxels, new THREE.BufferGeometry())
 
 // Create a new mesh from the geometry
-var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({vertexColors: THREE.VertexColors}))
+var mesh = new THREE.Mesh(
+  geometry,
+  new THREE.MeshPhongMaterial({vertexColors: THREE.VertexColors})
+)
 ```
 
 ## install
