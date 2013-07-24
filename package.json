@@ -1,0 +1,37 @@
+{
+  "name": "ndarray-geometry",
+  "description": "Populates a three.js BufferGeometry from a ndarray.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/shama/ndarray-geometry",
+  "author": {
+    "name": "Kyle Robinson Young",
+    "email": "kyle@dontkry.com",
+    "url": "http://dontkry.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/shama/ndarray-geometry.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shama/ndarray-geometry/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/shama/ndarray-geometry/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {},
+  "dependencies": {
+    "ao-mesher": "~0.2.9"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "ndarray",
+    "three",
+    "geometry"
+  ]
+}
