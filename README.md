@@ -1,11 +1,13 @@
-# ndarray-geometry
+# ndthree-mesh
 
 Populates a three.js BufferGeometry from a ndarray.
+
+**WIP: Currently only creates a BufferGeometry from a ndarray.**
 
 ## example
 
 ```js
-var ndarrayGeometry = require('ndarray-geometry')
+var ndarrayGeometry = require('ndthree-mesh')
 var ndarray = require('ndarray')
 var fill = require('ndarray-fill')
 var THREE = require('three')
@@ -40,10 +42,10 @@ var mesh = new THREE.Mesh(
 With [npm](https://npmjs.org) do:
 
 ```
-npm install ndarray-geometry
+npm install ndthree-mesh
 ```
 
-Use [browserify](http://browserify.org) to `require('ndarray-geometry')`.
+Use [browserify](http://browserify.org) to `require('ndthree-mesh')`.
 
 ## release history
 * 0.1.0 - initial release
