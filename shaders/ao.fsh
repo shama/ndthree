@@ -1,3 +1,6 @@
+// (c) 2013 Mikola Lysenko. MIT License
+// https://github.com/mikolalysenko/ao-shader
+
 uniform float tileSize;
 uniform sampler2D tileMap;
 
@@ -5,9 +8,6 @@ varying vec3  vNormal;
 varying vec2  tileCoord;
 varying vec2  texCoord;
 varying float ambientOcclusion;
-
-varying vec2  vUV;
-varying vec3  vColor;
 
 void main() {
 
@@ -36,11 +36,5 @@ void main() {
   
   float light = ambientOcclusion + max(0.15*dot(vNormal, vec3(1,1,1)), 0.0);
   
-  //gl_FragColor = vec4(color.xyz * light, 1.0);
-
-  gl_FragColor = vec4(texture2D(tileMap, vUV).rgb, 1.0);
-
-  //gl_FragColor = texture2D(tileMap, gl_PointCoord);
-  //gl_FragColor = vec4(vColor.xyz * light, 1.0);
-  //gl_FragColor = vec4(texture2D(tileMap, vUV).rgb * light, 1.0);
+  gl_FragColor = vec4(color.xyz * light, 1.0);
 }

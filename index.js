@@ -15,14 +15,12 @@ function ND3Mesh(arr, geometry) {
     attributes: {
       attrib0: { type: 'v4', value: [] },
       attrib1: { type: 'v4', value: [] },
-      //color: { type: 'v3', value: [] },
     },
     vertexShader: vsh,
     fragmentShader: fsh,
-    map: true,
   }
   this.geometry = geometry
-  if (this.data) this._init()
+  this._init()
 }
 module.exports = function(arr, geometry) {
   return new ND3Mesh(arr, geometry)
@@ -30,6 +28,7 @@ module.exports = function(arr, geometry) {
 module.exports.ND3Mesh = ND3Mesh
 
 ND3Mesh.prototype._init = function() {
+  var self = this
   var geometry = this.geometry
   var arr = this.ndarray
   var vert_data = this.data
@@ -66,6 +65,8 @@ ND3Mesh.prototype._init = function() {
     },
   }
 
+  if (this.data === null) return
+
   var chunkSize = Math.floor(Math.pow(2, 16) / 3)
 
   var indices = geometry.attributes.index.array
@@ -81,17 +82,7 @@ ND3Mesh.prototype._init = function() {
   var attrib0s = geometry.attributes.attrib0.array
   var attrib1s = geometry.attributes.attrib1.array
 
-  var p = 0
-  for (var i = 0; i < vert_data.length; i += 8) {
-    var x = vert_data[i + 0]
-    var y = vert_data[i + 1]
-    var z = vert_data[i + 2]
-    var ao = vert_data[i + 3]
-    var nx = vert_data[i + 4]
-    var ny = vert_data[i + 5]
-    var nz = vert_data[i + 6]
-    var tid = vert_data[i + 7]
-
+  eachData(vert_data, function(p, x, y, z, ao, nx, ny, nz, tid) {
     attrib0s[p + 0] = x
     attrib0s[p + 1] = y
     attrib0s[p + 2] = z
@@ -102,6 +93,18 @@ ND3Mesh.prototype._init = function() {
     attrib1s[p + 2] = nz
     attrib1s[p + 3] = tid
 
+    self.material.attributes.attrib0.value[p + 0] = x
+    self.material.attributes.attrib0.value[p + 1] = y
+    self.material.attributes.attrib0.value[p + 2] = z
+    self.material.attributes.attrib0.value[p + 3] = ao
+
+    self.material.attributes.attrib1.value[p + 0] = nx
+    self.material.attributes.attrib1.value[p + 1] = ny
+    self.material.attributes.attrib1.value[p + 2] = nz
+    self.material.attributes.attrib1.value[p + 3] = tid
+  }, 4)
+
+  eachData(vert_data, function(p, x, y, z, ao, nx, ny, nz, tid) {
     positions[p + 0] = x
     positions[p + 1] = y
     positions[p + 2] = z
@@ -113,26 +116,7 @@ ND3Mesh.prototype._init = function() {
     colors[p + 0] = 0
     colors[p + 1] = 0
     colors[p + 2] = 0
-
-    uvs[p + 0] = 0
-    uvs[p + 1] = 1
-
-    this.material.attributes.attrib0.value.push(x)
-    this.material.attributes.attrib0.value.push(y)
-    this.material.attributes.attrib0.value.push(z)
-    this.material.attributes.attrib0.value.push(ao)
-
-    this.material.attributes.attrib1.value.push(nx)
-    this.material.attributes.attrib1.value.push(ny)
-    this.material.attributes.attrib1.value.push(nz)
-    this.material.attributes.attrib1.value.push(tid)
-
-    //this.material.attributes.color.value.push(255)
-    //this.material.attributes.color.value.push(0)
-    //this.material.attributes.color.value.push(0)
-
-    p += 3
-  }
+  }, 3)
 
   geometry.offsets = []
   var offsets = triangles / chunkSize
@@ -151,4 +135,20 @@ ND3Mesh.prototype._init = function() {
 
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
+}
+
+function eachData(data, fn, by) {
+  var p = 0
+  for (var i = 0; i < data.length; i += 8) {
+    var x = data[i + 0]
+    var y = data[i + 1]
+    var z = data[i + 2]
+    var ao = data[i + 3]
+    var nx = data[i + 4]
+    var ny = data[i + 5]
+    var nz = data[i + 6]
+    var tid = data[i + 7]
+    fn(p, x, y, z, ao, nx, ny, nz, tid)
+    p += by
+  }
 }
