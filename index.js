@@ -28,12 +28,9 @@ module.exports = function(arr, geometry) {
 module.exports.ND3Mesh = ND3Mesh
 
 ND3Mesh.prototype._init = function() {
-  var self = this
   var geometry = this.geometry
-  var arr = this.ndarray
-  var vert_data = this.data
 
-  var triangles = 12 * arr.shape[0] * arr.shape[1] * arr.shape[2]
+  var triangles = 12 * this.ndarray.shape[0] * this.ndarray.shape[1] * this.ndarray.shape[2]
   geometry.attributes = {
     index: {
       itemSize: 1,
