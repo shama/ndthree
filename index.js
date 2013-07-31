@@ -82,41 +82,47 @@ ND3Mesh.prototype._init = function() {
   var attrib0s = geometry.attributes.attrib0.array
   var attrib1s = geometry.attributes.attrib1.array
 
-  eachData(vert_data, function(p, x, y, z, ao, nx, ny, nz, tid) {
-    attrib0s[p + 0] = x
-    attrib0s[p + 1] = y
-    attrib0s[p + 2] = z
-    attrib0s[p + 3] = ao
+  var p4 = 0, p3 = 0
+  for (var i = 0; i < this.data.length; i += 8) {
+    var x = this.data[i + 0], y = this.data[i + 1], z = this.data[i + 2], ao = this.data[i + 3]
+    var nx = this.data[i + 4], ny = this.data[i + 5], nz = this.data[i + 6], tid = this.data[i + 7]
 
-    attrib1s[p + 0] = nx
-    attrib1s[p + 1] = ny
-    attrib1s[p + 2] = nz
-    attrib1s[p + 3] = tid
+    attrib0s[p4 + 0] = x
+    attrib0s[p4 + 1] = y
+    attrib0s[p4 + 2] = z
+    attrib0s[p4 + 3] = ao
 
-    self.material.attributes.attrib0.value[p + 0] = x
-    self.material.attributes.attrib0.value[p + 1] = y
-    self.material.attributes.attrib0.value[p + 2] = z
-    self.material.attributes.attrib0.value[p + 3] = ao
+    attrib1s[p4 + 0] = nx
+    attrib1s[p4 + 1] = ny
+    attrib1s[p4 + 2] = nz
+    attrib1s[p4 + 3] = tid
 
-    self.material.attributes.attrib1.value[p + 0] = nx
-    self.material.attributes.attrib1.value[p + 1] = ny
-    self.material.attributes.attrib1.value[p + 2] = nz
-    self.material.attributes.attrib1.value[p + 3] = tid
-  }, 4)
+    this.material.attributes.attrib0.value[p4 + 0] = x
+    this.material.attributes.attrib0.value[p4 + 1] = y
+    this.material.attributes.attrib0.value[p4 + 2] = z
+    this.material.attributes.attrib0.value[p4 + 3] = ao
 
-  eachData(vert_data, function(p, x, y, z, ao, nx, ny, nz, tid) {
-    positions[p + 0] = x
-    positions[p + 1] = y
-    positions[p + 2] = z
+    this.material.attributes.attrib1.value[p4 + 0] = nx
+    this.material.attributes.attrib1.value[p4 + 1] = ny
+    this.material.attributes.attrib1.value[p4 + 2] = nz
+    this.material.attributes.attrib1.value[p4 + 3] = tid
 
-    normals[p + 0] = nx
-    normals[p + 1] = ny
-    normals[p + 2] = nz
+    positions[p3 + 0] = x
+    positions[p3 + 1] = y
+    positions[p3 + 2] = z
 
-    colors[p + 0] = 0
-    colors[p + 1] = 0
-    colors[p + 2] = 0
-  }, 3)
+    normals[p3 + 0] = nx
+    normals[p3 + 1] = ny
+    normals[p3 + 2] = nz
+
+    // TODO: implement colors
+    colors[p3 + 0] = 0
+    colors[p3 + 1] = 0
+    colors[p3 + 2] = 0
+
+    p4 += 4
+    p3 += 3
+  }
 
   geometry.offsets = []
   var offsets = triangles / chunkSize
@@ -135,20 +141,4 @@ ND3Mesh.prototype._init = function() {
 
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
-}
-
-function eachData(data, fn, by) {
-  var p = 0
-  for (var i = 0; i < data.length; i += 8) {
-    var x = data[i + 0]
-    var y = data[i + 1]
-    var z = data[i + 2]
-    var ao = data[i + 3]
-    var nx = data[i + 4]
-    var ny = data[i + 5]
-    var nz = data[i + 6]
-    var tid = data[i + 7]
-    fn(p, x, y, z, ao, nx, ny, nz, tid)
-    p += by
-  }
 }
