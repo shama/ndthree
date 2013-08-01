@@ -1,55 +1,89 @@
-# ndthree-mesh
+# ndthree
 
-Populates a three.js BufferGeometry from a ndarray.
+The unholy union of [three.js](https://github.com/mrdoob/three.js/)
+and [Mikola Lysenko's ndarrays](https://github.com/mikolalysenko/ndarray).
 
-**WIP: Currently only creates a BufferGeometry from a ndarray.**
+It's far more efficient to just use
+[gl-now](https://github.com/mikolalysenko/gl-now). See the
+[voxel-mipmap-demo](https://github.com/mikolalysenko/voxel-mipmap-demo). But if
+you would like to use ndarrays with three.js then this is the library for you.
 
 ## example
 
+See [http://shama.github.io/ndthree](http://shama.github.io/ndthree).
+
 ```js
-var ndarrayGeometry = require('ndthree-mesh')
+// initialize our modules
+var ndthree = require('ndthree')
 var ndarray = require('ndarray')
 var fill = require('ndarray-fill')
+var terrain = require('isabella-texture-pack')
 var THREE = require('three')
 
-// create our ndarray
-var voxels = ndarray(new Int32Array(32 * 32 * 32), [32, 32, 32])
-
-// Fill it up with a voxel sphere
-fill(voxels, function(i, j, k) {
-  var x = i - 16
-  var y = j - 16
-  var z = k - 16
-  if (x*x+y*y+z*z < 30) {
-    if (k < 16) return 1<<15
-    return (1<<15)+1
-  }  
-  return 0
+// Create some random voxels in a sphere
+var voxels = ndarray(new Uint16Array(32*32*32), [32,32,32])
+fill(voxels, function(i,j,k) {
+  var x = Math.abs(i - 16)
+  var y = Math.abs(j - 16)
+  var z = Math.abs(k - 16)
+  // (1<<15) toggles ambient occlusion
+  return (x*x+y*y+z*z) < 190 ? ((Math.random()*255)|0) + (1<<15) : 0
 })
 
-// Give it a ndarray and BufferGeometry to populate
-var geometry = ndarrayGeometry(voxels, new THREE.BufferGeometry())
+// Create our buffer geometry and shader material
+var geometry = new THREE.BufferGeometry()
+var material = new THREE.ShaderMaterial()
 
-// Create a new mesh from the geometry
-var mesh = new THREE.Mesh(
-  geometry,
-  new THREE.MeshPhongMaterial({vertexColors: THREE.VertexColors})
-)
+// Populate the geometry and material
+ndthree(voxels, geometry, material)
+
+// Use helper for creating a mesh (optional)
+var mesh = ndthree.createMesh({
+  THREE: THREE,
+  geometry: geometry,
+  material: material,
+  map: terrain,
+  size: 32,
+})
 ```
+
+## api
+
+`var ndthree = require('ndthree')`
+
+### `ndthree(ndarray, geometry, material)`
+
+- `ndarray` should be 3 dimensional, eg `[32, 32, 32]`.
+- `geometry` can be just an object but easier if a `THREE.BufferGeometry`.
+- `material` can be just an object but easier if a `THREE.ShaderMaterial`.
+
+### `ndthree.createMesh(options)`
+A helper for creating a three.js mesh from the previously created geometry and
+material.
+
+- `options`
+  - `THREE` Pass in the instance of three.js. *Required*
+  - `geometry` Pass in a `THREE.BufferGeometry`. *Required*
+  - `material` Pass in a `THREE.ShaderMaterial`. *Required*
+  - `map|texture` Pass in a ndarray texture tile map. *Required*
+  - `shape` Shape of ndarray that generated the geometry. Used to offset the
+  mesh position for centering. *Default: [32, 32, 32]*
+
+*Returns:* A three.js mesh.
 
 ## install
 
 With [npm](https://npmjs.org) do:
 
 ```
-npm install ndthree-mesh
+npm install ndthree
 ```
 
-Use [browserify](http://browserify.org) to `require('ndthree-mesh')`.
+Use [browserify](http://browserify.org) to `require('ndthree')`.
 
 ## release history
 * 0.1.0 - initial release
 
 ## license
-Copyright (c) 2013 Kyle Robinson Young<br/>
+Copyright (c) 2013 Kyle Robinson Young  
 Licensed under the MIT license.
