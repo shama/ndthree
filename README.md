@@ -37,13 +37,19 @@ var material = new THREE.ShaderMaterial()
 // Populate the geometry and material
 ndthree(voxels, geometry, material)
 
+// Restructure terrain ([256,256,4]) into a tile map shape ([16, 16, 16, 16, 4])
+var tiles = ndarray(terrain.data,
+    [16,16,terrain.shape[0]>>4,terrain.shape[1]>>4,4],
+    [terrain.stride[0]*16, terrain.stride[1]*16, terrain.stride[0], terrain.stride[1], terrain.stride[2]], 0)
+
 // Use helper for creating a mesh (optional)
 var mesh = ndthree.createMesh({
   THREE: THREE,
   geometry: geometry,
   material: material,
-  map: terrain,
+  map: tiles,
   size: 32,
+  pad: true,
 })
 ```
 
@@ -65,9 +71,10 @@ material.
   - `THREE` Pass in the instance of three.js. *Required*
   - `geometry` Pass in a `THREE.BufferGeometry`. *Required*
   - `material` Pass in a `THREE.ShaderMaterial`. *Required*
-  - `map|texture` Pass in a ndarray texture tile map.
+  - `map|texture` Pass in a ndarray texture tile map in the shape of `[16, 16, 16, 16, 4]`.
   - `shape` Shape of ndarray that generated the geometry. Used to offset the
   mesh position for centering. *Default: [32, 32, 32]*
+  - `pad` Boolean whether to pad tile map. *Default: true*
 
 *Returns:* A three.js mesh.
 

@@ -30,7 +30,9 @@
   "dependencies": {
     "ao-mesher": "~0.2.9",
     "brfs": "0.0.6",
-    "extend": "~1.1.3"
+    "extend": "~1.1.3",
+    "tile-mip-map": "~0.2.1",
+    "ndarray": "~1.0.5"
   },
   "devDependencies": {
     "beefy": "~0.4.1",

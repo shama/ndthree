@@ -31,11 +31,15 @@ var geometry = new THREE.BufferGeometry()
 var material = new THREE.ShaderMaterial()
 ndthree(voxels, geometry, material)
 
+var tiles = ndarray(terrain.data,
+    [16,16,terrain.shape[0]>>4,terrain.shape[1]>>4,4],
+    [terrain.stride[0]*16, terrain.stride[1]*16, terrain.stride[0], terrain.stride[1], terrain.stride[2]], 0)
+
 var mesh = ndthree.createMesh({
   THREE: THREE,
   geometry: geometry,
   material: material,
-  map: terrain,
+  map: tiles,
   shape: shape,
 })
 scene.add(mesh)

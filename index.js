@@ -1,5 +1,7 @@
 var extend = require('extend')
 var createAOMesh = require('ao-mesher')
+var tileMipMap = require('tile-mip-map')
+var ndarray = require('ndarray')
 var fs = require('fs')
 
 var vsh = fs.readFileSync(__dirname + '/shaders/ao.vsh')
@@ -127,6 +129,11 @@ module.exports = function(arr, geometry, material) {
   })
 }
 
+function reshapeTileMap(tiles) {
+  var s = tiles.shape
+  return ndarray(tiles.data, [s[0]*s[2], s[1]*s[3], s[4]])
+}
+
 // Helper for creating a mesh, this part requires THREE
 module.exports.createMesh = function(opts) {
   var THREE = opts.THREE
@@ -134,11 +141,15 @@ module.exports.createMesh = function(opts) {
   var material = opts.material
   var texture = opts.map || opts.texture || false
   var shape = opts.shape || [32, 32, 32]
+  var pad = opts.pad !== false
 
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
 
   if (texture) {
+    var pyramid = tileMipMap(texture, pad)
+    texture = reshapeTileMap(pyramid[0])
+
     texture = new THREE.DataTexture(texture.data, texture.shape[1], texture.shape[0],
       THREE.RGBAFormat, THREE.UnsignedByteType, (new THREE.UVMapping()),
       THREE.RepeatWrapping, THREE.RepeatWrapping,
@@ -146,6 +157,17 @@ module.exports.createMesh = function(opts) {
     texture.flipY = false
     texture.wrapS = 1000
     texture.wrapT = 1000
+
+    // set mipmap levels
+    for (var i = 1; i < pyramid.length; ++i) {
+      var level = reshapeTileMap(pyramid[i])
+      texture.mipmaps.push({
+        data: level.data,
+        width: level.shape[1],
+        height: level.shape[0],
+      })
+    }
+
     texture.needsUpdate = true
 
     material.uniforms.tileMap.value = texture
