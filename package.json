@@ -1,8 +1,8 @@
 {
-  "name": "ndthree-mesh",
-  "description": "Populates a three.js BufferGeometry from a ndarray.",
+  "name": "ndthree",
+  "description": "The unholy union of three.js and ndarrays",
   "version": "0.1.0",
-  "homepage": "https://github.com/shama/ndthree-mesh",
+  "homepage": "https://github.com/shama/ndthree",
   "author": {
     "name": "Kyle Robinson Young",
     "email": "kyle@dontkry.com",
@@ -10,32 +10,43 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/shama/ndthree-mesh.git"
+    "url": "git://github.com/shama/ndthree.git"
   },
   "bugs": {
-    "url": "https://github.com/shama/ndthree-mesh/issues"
+    "url": "https://github.com/shama/ndthree/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/shama/ndthree-mesh/blob/master/LICENSE-MIT"
+      "url": "https://github.com/shama/ndthree/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {},
+  "scripts": {
+    "start": "beefy example.js 8080 -- -t brfs"
+  },
   "dependencies": {
     "ao-mesher": "~0.2.9",
-    "brfs": "0.0.6"
+    "brfs": "0.0.6",
+    "extend": "~1.1.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "beefy": "~0.4.1",
+    "three": "~0.58.9",
+    "ndarray": "~1.0.5",
+    "ndarray-fill": "~0.1.0",
+    "isabella-texture-pack": "0.0.1"
+  },
   "browserify": {
     "transform": "brfs"
   },
   "keywords": [
     "ndarray",
     "three",
-    "geometry"
+    "geometry",
+    "mesh",
+    "material"
   ]
 }
