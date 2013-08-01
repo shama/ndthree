@@ -1,13 +1,14 @@
+var extend = require('extend')
 var createAOMesh = require('ao-mesher')
 var fs = require('fs')
 
 var vsh = fs.readFileSync(__dirname + '/shaders/ao.vsh')
 var fsh = fs.readFileSync(__dirname + '/shaders/ao.fsh')
 
-function ND3Mesh(arr, geometry) {
-  this.ndarray = arr
-  this.data = createAOMesh(arr)
-  this.material = {
+module.exports = function(arr, geometry, material) {
+  var data = createAOMesh(arr)
+
+  extend(true, material, {
     uniforms: {
       tileSize: { type: 'f', value: 16.0 },
       tileMap: { type: 't', value: [] },
@@ -18,19 +19,9 @@ function ND3Mesh(arr, geometry) {
     },
     vertexShader: vsh,
     fragmentShader: fsh,
-  }
-  this.geometry = geometry
-  this._init()
-}
-module.exports = function(arr, geometry) {
-  return new ND3Mesh(arr, geometry)
-}
-module.exports.ND3Mesh = ND3Mesh
+  })
 
-ND3Mesh.prototype._init = function() {
-  var geometry = this.geometry
-
-  var triangles = 12 * this.ndarray.shape[0] * this.ndarray.shape[1] * this.ndarray.shape[2]
+  var triangles = 12 * arr.shape[0] * arr.shape[1] * arr.shape[2]
   geometry.attributes = {
     index: {
       itemSize: 1,
@@ -62,7 +53,7 @@ ND3Mesh.prototype._init = function() {
     },
   }
 
-  if (this.data === null) return
+  if (data === null) return
 
   var chunkSize = Math.floor(Math.pow(2, 16) / 3)
 
@@ -80,9 +71,9 @@ ND3Mesh.prototype._init = function() {
   var attrib1s = geometry.attributes.attrib1.array
 
   var p4 = 0, p3 = 0
-  for (var i = 0; i < this.data.length; i += 8) {
-    var x = this.data[i + 0], y = this.data[i + 1], z = this.data[i + 2], ao = this.data[i + 3]
-    var nx = this.data[i + 4], ny = this.data[i + 5], nz = this.data[i + 6], tid = this.data[i + 7]
+  for (var i = 0; i < data.length; i += 8) {
+    var x = data[i + 0], y = data[i + 1], z = data[i + 2], ao = data[i + 3]
+    var nx = data[i + 4], ny = data[i + 5], nz = data[i + 6], tid = data[i + 7]
 
     attrib0s[p4 + 0] = x
     attrib0s[p4 + 1] = y
@@ -94,15 +85,15 @@ ND3Mesh.prototype._init = function() {
     attrib1s[p4 + 2] = nz
     attrib1s[p4 + 3] = tid
 
-    this.material.attributes.attrib0.value[p4 + 0] = x
-    this.material.attributes.attrib0.value[p4 + 1] = y
-    this.material.attributes.attrib0.value[p4 + 2] = z
-    this.material.attributes.attrib0.value[p4 + 3] = ao
+    material.attributes.attrib0.value[p4 + 0] = x
+    material.attributes.attrib0.value[p4 + 1] = y
+    material.attributes.attrib0.value[p4 + 2] = z
+    material.attributes.attrib0.value[p4 + 3] = ao
 
-    this.material.attributes.attrib1.value[p4 + 0] = nx
-    this.material.attributes.attrib1.value[p4 + 1] = ny
-    this.material.attributes.attrib1.value[p4 + 2] = nz
-    this.material.attributes.attrib1.value[p4 + 3] = tid
+    material.attributes.attrib1.value[p4 + 0] = nx
+    material.attributes.attrib1.value[p4 + 1] = ny
+    material.attributes.attrib1.value[p4 + 2] = nz
+    material.attributes.attrib1.value[p4 + 3] = tid
 
     positions[p3 + 0] = x
     positions[p3 + 1] = y
@@ -135,7 +126,36 @@ ND3Mesh.prototype._init = function() {
   Object.keys(geometry.attributes).forEach(function(key) {
     geometry.attributes[key].needsUpdate = true
   })
+}
+
+// Helper for creating a mesh, this part requires THREE
+module.exports.createMesh = function(opts) {
+  var THREE = opts.THREE
+  var geometry = opts.geometry
+  var material = opts.material
+  var texture = opts.map || opts.texture
+  var shape = opts.shape || [32, 32, 32]
 
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
+
+  texture = new THREE.DataTexture(texture.data, texture.shape[1], texture.shape[0],
+    THREE.RGBAFormat, THREE.UnsignedByteType, (new THREE.UVMapping()),
+    THREE.RepeatWrapping, THREE.RepeatWrapping,
+    THREE.NearestFilter, THREE.NearestFilter)
+  texture.flipY = false
+  texture.wrapS = 1000
+  texture.wrapT = 1000
+  texture.needsUpdate = true
+
+  material.uniforms.tileMap.value = texture
+  material.side = THREE.DoubleSide
+  material.needsUpdate = true
+
+  var mesh = new THREE.Object3D()
+  var inner = new THREE.Mesh(geometry, material)
+  inner.position.set(-(shape[0]/2), -(shape[1]/2), -(shape[2]/2))
+  mesh.add(inner)
+
+  return mesh
 }
