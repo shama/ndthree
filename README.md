@@ -65,7 +65,7 @@ material.
   - `THREE` Pass in the instance of three.js. *Required*
   - `geometry` Pass in a `THREE.BufferGeometry`. *Required*
   - `material` Pass in a `THREE.ShaderMaterial`. *Required*
-  - `map|texture` Pass in a ndarray texture tile map. *Required*
+  - `map|texture` Pass in a ndarray texture tile map.
   - `shape` Shape of ndarray that generated the geometry. Used to offset the
   mesh position for centering. *Default: [32, 32, 32]*
 

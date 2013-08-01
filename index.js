@@ -103,7 +103,6 @@ module.exports = function(arr, geometry, material) {
     normals[p3 + 1] = ny
     normals[p3 + 2] = nz
 
-    // TODO: implement colors
     colors[p3 + 0] = 0
     colors[p3 + 1] = 0
     colors[p3 + 2] = 0
@@ -133,24 +132,26 @@ module.exports.createMesh = function(opts) {
   var THREE = opts.THREE
   var geometry = opts.geometry
   var material = opts.material
-  var texture = opts.map || opts.texture
+  var texture = opts.map || opts.texture || false
   var shape = opts.shape || [32, 32, 32]
 
   geometry.computeBoundingBox()
   geometry.computeBoundingSphere()
 
-  texture = new THREE.DataTexture(texture.data, texture.shape[1], texture.shape[0],
-    THREE.RGBAFormat, THREE.UnsignedByteType, (new THREE.UVMapping()),
-    THREE.RepeatWrapping, THREE.RepeatWrapping,
-    THREE.NearestFilter, THREE.NearestFilter)
-  texture.flipY = false
-  texture.wrapS = 1000
-  texture.wrapT = 1000
-  texture.needsUpdate = true
+  if (texture) {
+    texture = new THREE.DataTexture(texture.data, texture.shape[1], texture.shape[0],
+      THREE.RGBAFormat, THREE.UnsignedByteType, (new THREE.UVMapping()),
+      THREE.RepeatWrapping, THREE.RepeatWrapping,
+      THREE.NearestFilter, THREE.NearestFilter)
+    texture.flipY = false
+    texture.wrapS = 1000
+    texture.wrapT = 1000
+    texture.needsUpdate = true
 
-  material.uniforms.tileMap.value = texture
-  material.side = THREE.DoubleSide
-  material.needsUpdate = true
+    material.uniforms.tileMap.value = texture
+    material.side = THREE.DoubleSide
+    material.needsUpdate = true
+  }
 
   var mesh = new THREE.Object3D()
   var inner = new THREE.Mesh(geometry, material)
