@@ -105,10 +105,6 @@ module.exports = function(arr, geometry, material) {
     normals[p3 + 1] = ny
     normals[p3 + 2] = nz
 
-    colors[p3 + 0] = 0
-    colors[p3 + 1] = 0
-    colors[p3 + 2] = 0
-
     p4 += 4
     p3 += 3
   }

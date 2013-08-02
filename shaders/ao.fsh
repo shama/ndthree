@@ -9,10 +9,17 @@ varying vec2  tileCoord;
 varying vec2  texCoord;
 varying float ambientOcclusion;
 
-void main() {
+varying vec3 vColor;
 
+void main() {
   vec2 uv      = texCoord;
-  vec4 color   = vec4(0,0,0,0);
+
+  #ifdef USE_COLOR
+    vec4 color   = vec4(vColor,0);
+  #else
+    vec4 color   = vec4(0,0,0,0);
+  #endif
+
   float weight = 0.0;
 
   vec2 tileOffset = 2.0 * tileSize * tileCoord;

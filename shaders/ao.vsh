@@ -9,7 +9,13 @@ varying vec2  tileCoord;
 varying vec2  texCoord;
 varying float ambientOcclusion;
 
+varying vec3 vColor;
+
 void main() {
+  #ifdef USE_COLOR
+    vColor = color;
+  #endif
+
   //Compute position
   vec3 pos = attrib0.xyz;
   
