@@ -13,12 +13,7 @@ varying vec3 vColor;
 
 void main() {
   vec2 uv      = texCoord;
-
-  #ifdef USE_COLOR
-    vec4 color   = vec4(vColor,0);
-  #else
-    vec4 color   = vec4(0,0,0,0);
-  #endif
+  vec4 color   = vec4(0,0,0,0);
 
   float weight = 0.0;
 

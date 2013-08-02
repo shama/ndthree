@@ -9,6 +9,7 @@ var fsh = fs.readFileSync(__dirname + '/shaders/ao.fsh')
 
 module.exports = function(arr, geometry, material) {
   var data = createAOMesh(arr)
+  if (data === null) return false
 
   extend(true, material, {
     uniforms: {
@@ -17,7 +18,6 @@ module.exports = function(arr, geometry, material) {
     },
     attributes: {
       attrib0: { type: 'v4', value: [] },
-      attrib1: { type: 'v4', value: [] },
     },
     vertexShader: vsh,
     fragmentShader: fsh,
@@ -37,25 +37,11 @@ module.exports = function(arr, geometry, material) {
       itemSize: 3,
       array: new Float32Array(triangles * 3 * 3)
     },
-    color: {
-      itemSize: 3,
-      array: new Float32Array(triangles * 3 * 3)
-    },
-    uv: {
+    attrib0: {
       itemSize: 2,
       array: new Float32Array(triangles * 3 * 2)
     },
-    attrib0: {
-      itemSize: 4,
-      array: new Float32Array(triangles * 3 * 4)
-    },
-    attrib1: {
-      itemSize: 4,
-      array: new Float32Array(triangles * 3 * 4)
-    },
   }
-
-  if (data === null) return
 
   var chunkSize = Math.floor(Math.pow(2, 16) / 3)
 
@@ -66,36 +52,15 @@ module.exports = function(arr, geometry, material) {
 
   var positions = geometry.attributes.position.array
   var normals = geometry.attributes.normal.array
-  var colors = geometry.attributes.color.array
-  var uvs = geometry.attributes.uv.array
-
   var attrib0s = geometry.attributes.attrib0.array
-  var attrib1s = geometry.attributes.attrib1.array
 
-  var p4 = 0, p3 = 0
+  var p3 = 0, p2 = 0
   for (var i = 0; i < data.length; i += 8) {
     var x = data[i + 0], y = data[i + 1], z = data[i + 2], ao = data[i + 3]
     var nx = data[i + 4], ny = data[i + 5], nz = data[i + 6], tid = data[i + 7]
 
-    attrib0s[p4 + 0] = x
-    attrib0s[p4 + 1] = y
-    attrib0s[p4 + 2] = z
-    attrib0s[p4 + 3] = ao
-
-    attrib1s[p4 + 0] = nx
-    attrib1s[p4 + 1] = ny
-    attrib1s[p4 + 2] = nz
-    attrib1s[p4 + 3] = tid
-
-    material.attributes.attrib0.value[p4 + 0] = x
-    material.attributes.attrib0.value[p4 + 1] = y
-    material.attributes.attrib0.value[p4 + 2] = z
-    material.attributes.attrib0.value[p4 + 3] = ao
-
-    material.attributes.attrib1.value[p4 + 0] = nx
-    material.attributes.attrib1.value[p4 + 1] = ny
-    material.attributes.attrib1.value[p4 + 2] = nz
-    material.attributes.attrib1.value[p4 + 3] = tid
+    attrib0s[p2 + 0] = ao
+    attrib0s[p2 + 1] = tid
 
     positions[p3 + 0] = x
     positions[p3 + 1] = y
@@ -105,8 +70,8 @@ module.exports = function(arr, geometry, material) {
     normals[p3 + 1] = ny
     normals[p3 + 2] = nz
 
-    p4 += 4
     p3 += 3
+    p2 += 2
   }
 
   geometry.offsets = []
