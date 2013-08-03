@@ -16,33 +16,41 @@ scene.add(camera)
 camera.position.z = 60
 renderer.setSize(width, height)
 
-//Create some random voxels in a sphere
-var shape = [32, 32, 32]
-var voxels = ndarray(new Uint16Array(shape[0]*shape[1]*shape[2]), shape)
-fill(voxels, function(i,j,k) {
-  var x = Math.abs(i - (shape[0]/2))
-  var y = Math.abs(j - (shape[1]/2))
-  var z = Math.abs(k - (shape[2]/2))
-  return (x*x+y*y+z*z) < 190 ? ((Math.random()*255)|0) + (1<<15) : 0
-})
-
-// Create our buffer geometry and material
-var geometry = new THREE.BufferGeometry()
-var material = new THREE.ShaderMaterial()
-ndthree(voxels, geometry, material)
-
+// create tiles from tilemap
 var tiles = ndarray(terrain.data,
-    [16,16,terrain.shape[0]>>4,terrain.shape[1]>>4,4],
-    [terrain.stride[0]*16, terrain.stride[1]*16, terrain.stride[0], terrain.stride[1], terrain.stride[2]], 0)
+  [16,16,terrain.shape[0]>>4,terrain.shape[1]>>4,4],
+  [terrain.stride[0]*16, terrain.stride[1]*16, terrain.stride[0], terrain.stride[1], terrain.stride[2]], 0)
+var material = new THREE.ShaderMaterial()
 
-var mesh = ndthree.createMesh({
-  THREE: THREE,
-  geometry: geometry,
-  material: material,
-  map: tiles,
-  shape: shape,
-})
-scene.add(mesh)
+var meshes = []
+function create(pos) {
+  //Create some random voxels in a sphere
+  var shape = [32, 32, 32]
+  var voxels = ndarray(new Uint16Array(shape[0]*shape[1]*shape[2]), shape)
+  fill(voxels, function(i,j,k) {
+    var x = Math.abs(i - (shape[0]/2))
+    var y = Math.abs(j - (shape[1]/2))
+    var z = Math.abs(k - (shape[2]/2))
+    return (x*x+y*y+z*z) < 190 ? ((Math.random()*255)|0) + (1<<15) : 0
+  })
+
+  // Create our buffer geometry and material
+  var geometry = new THREE.BufferGeometry()
+  ndthree(voxels, geometry, material)
+
+  var mesh = ndthree.createMesh({
+    THREE: THREE,
+    geometry: geometry,
+    material: material,
+    map: tiles,
+    offset: [-16, -16, -16],
+  })
+  mesh.position.set(pos[0] * 32, pos[1] * 32, pos[2] * 32)
+  scene.add(mesh)
+
+  return mesh
+}
+meshes.push(create([0, 0, 0]))
 
 var ambientLight = new THREE.AmbientLight(0xff0000)
 scene.add(ambientLight)
@@ -74,7 +82,9 @@ window.requestAnimFrame = (function(){
 }())
 
 function render() {
-  mesh.rotation.y += 0.01
-  mesh.rotation.z += 0.01
+  meshes.forEach(function(m) {
+    m.rotation.y += 0.01
+    m.rotation.z += 0.01
+  })
   renderer.render(scene, camera)
 }
