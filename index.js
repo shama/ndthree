@@ -101,7 +101,7 @@ module.exports.createMesh = function(opts) {
   var geometry = opts.geometry
   var material = opts.material
   var texture = opts.map || opts.texture || false
-  var shape = opts.shape || [32, 32, 32]
+  var offset = opts.offset || [1, 1, 1]
   var pad = opts.pad !== false
 
   geometry.computeBoundingBox()
@@ -138,7 +138,7 @@ module.exports.createMesh = function(opts) {
 
   var mesh = new THREE.Object3D()
   var inner = new THREE.Mesh(geometry, material)
-  inner.position.set(-(shape[0]/2), -(shape[1]/2), -(shape[2]/2))
+  inner.position.set(offset[0], offset[1], offset[2])
   mesh.add(inner)
 
   return mesh

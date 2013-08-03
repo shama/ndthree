@@ -72,8 +72,7 @@ material.
   - `geometry` Pass in a `THREE.BufferGeometry`. *Required*
   - `material` Pass in a `THREE.ShaderMaterial`. *Required*
   - `map|texture` Pass in a ndarray texture tile map in the shape of `[16, 16, 16, 16, 4]`.
-  - `shape` Shape of ndarray that generated the geometry. Used to offset the
-  mesh position for centering. *Default: [32, 32, 32]*
+  - `offset` Offset the mesh with this array. *Default: [1, 1, 1]*
   - `pad` Boolean whether to pad tile map. *Default: true*
 
 *Returns:* A three.js mesh.
