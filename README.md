@@ -88,7 +88,7 @@ npm install ndthree
 Use [browserify](http://browserify.org) to `require('ndthree')`.
 
 ## release history
-* 0.2.0 - Memory fixes. createMesh option changes.
+* 0.2.0 - Memory fixes. createMesh option changes. Mipmaps now generated.
 * 0.1.0 - initial release
 
 ## license
