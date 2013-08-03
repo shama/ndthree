@@ -1,7 +1,7 @@
 {
   "name": "ndthree",
   "description": "The unholy union of three.js and ndarrays",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/shama/ndthree",
   "author": {
     "name": "Kyle Robinson Young",
