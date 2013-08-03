@@ -17,7 +17,7 @@ module.exports = function(arr, geometry, material) {
       tileMap: { type: 't', value: [] },
     },
     attributes: {
-      attrib0: { type: 'v4', value: [] },
+      attrib0: { type: 'v2', value: [] },
     },
     vertexShader: vsh,
     fragmentShader: fsh,
