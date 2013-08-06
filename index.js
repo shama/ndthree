@@ -15,7 +15,8 @@ function ND3(opts) {
   this.material = opts.material || {}
 
   // 12 triangles per cube * cubes per chunk
-  var triangles = 12 * this.shape[0] * this.shape[1] * this.shape[2]
+  var triangles = 12 * this.shape[0] * this.shape[1] * this.shape[2] * (this.distance * 2)
+  console.log(triangles)
 
   this.geometry.attributes = {
     index: {
@@ -72,6 +73,7 @@ module.exports = function(geometry, material) {
 module.exports.ND3 = ND3
 
 ND3.prototype.offset = function(pos) {
+  var offset = 12 * this.shape[0] * this.shape[1] * this.shape[2]
 }
 
 ND3.prototype.chunk = function(pos, arr) {
@@ -83,24 +85,25 @@ ND3.prototype.chunk = function(pos, arr) {
   var normals = this.geometry.attributes.normal.array
   var attrib0s = this.geometry.attributes.attrib0.array
 
-  //var offset = 12 * pos[0] * this.shape[0] * pos[1] * this.shape[1] * pos[2] * this.shape[2]
-  var offset = 12 * (this.shape[0] * pos[0]) * (this.shape[1] * pos[1]) * (this.shape[2] * pos[2])
-  //offset *= pos[0] * pos[1] * pos[2]
-  //if (pos[0] !== 0) offset = offset * 2
-  console.log(pos, offset, this.shape)
+  var dist = this.distance
+  var offset = [this.shape[0] * (pos[0] + dist), this.shape[1] * (pos[1] + dist), this.shape[2] * (pos[2] + dist)]
+  var offsetptr = 12 * offset[0] + offset[1] + offset[2]
+  //console.log(pos, offset, this.shape)
+  var tileid = (Math.random()*255|0) + (1<<15)
 
-  //var p3 = offset * 3 * 3, p2 = offset * 3 * 2
-  var p3 = 0, p2 = 0
+  var p3 = offsetptr * 3 * 3, p2 = offsetptr * 3 * 2
   for (var i = 0; i < data.length; i += 8) {
     var x = data[i + 0], y = data[i + 1], z = data[i + 2], ao = data[i + 3]
     var nx = data[i + 4], ny = data[i + 5], nz = data[i + 6], tid = data[i + 7]
 
+    tid = tileid
+
     attrib0s[p2 + 0] = ao
     attrib0s[p2 + 1] = tid
 
-    positions[p3 + 0] = x + (this.shape[0] * pos[0])
-    positions[p3 + 1] = y + (this.shape[1] * pos[1])
-    positions[p3 + 2] = z + (this.shape[2] * pos[2])
+    positions[p3 + 0] = x + (this.shape[0] * (pos[0] + dist))
+    positions[p3 + 1] = y + (this.shape[1] * (pos[1] + dist))
+    positions[p3 + 2] = z + (this.shape[2] * (pos[2] + dist))
 
     normals[p3 + 0] = nx
     normals[p3 + 1] = ny
