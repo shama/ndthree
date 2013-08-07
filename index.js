@@ -9,14 +9,13 @@ var fsh = fs.readFileSync(__dirname + '/shaders/ao.fsh')
 
 function ND3(opts) {
   opts = opts || {}
-  this.distance = opts.distance || 2
+  this.chunks = opts.chunks || 2
   this.shape = opts.shape || [32, 32, 32]
   this.geometry = opts.geometry || {}
   this.material = opts.material || {}
 
   // 12 triangles per cube * cubes per chunk
-  var triangles = 12 * this.shape[0] * this.shape[1] * this.shape[2] * (this.distance * 2)
-  console.log(triangles)
+  var triangles = 12 * this.shape[0] * this.shape[1] * this.shape[2] * this.chunks
 
   this.geometry.attributes = {
     index: {
@@ -36,7 +35,7 @@ function ND3(opts) {
       array: new Float32Array(triangles * 3 * 2)
     },
   }
-  //this.geometry.dynamic = true
+  this.geometry.dynamic = true
 
   this.material.uniforms = {
     tileSize: { type: 'f', value: 16.0 },
@@ -72,10 +71,6 @@ module.exports = function(geometry, material) {
 }
 module.exports.ND3 = ND3
 
-ND3.prototype.offset = function(pos) {
-  var offset = 12 * this.shape[0] * this.shape[1] * this.shape[2]
-}
-
 ND3.prototype.chunk = function(pos, arr) {
   var self = this
   var data = createAOMesh(arr)
@@ -85,25 +80,21 @@ ND3.prototype.chunk = function(pos, arr) {
   var normals = this.geometry.attributes.normal.array
   var attrib0s = this.geometry.attributes.attrib0.array
 
-  var dist = this.distance
-  var offset = [this.shape[0] * (pos[0] + dist), this.shape[1] * (pos[1] + dist), this.shape[2] * (pos[2] + dist)]
-  var offsetptr = 12 * offset[0] + offset[1] + offset[2]
-  //console.log(pos, offset, this.shape)
-  var tileid = (Math.random()*255|0) + (1<<15)
+  var dist = 0
+  var offset = [this.shape[0] * pos[0], this.shape[1] * pos[1], this.shape[2] * pos[2]]
+  var p3 = ((offset[0] * 12 * 3 * 3 * (this.shape[0] * this.shape[1])) + (offset[1] * 12 * 3 * 3 * this.shape[2]) + (offset[2] * 12 * 3 * 3))
+  var p2 = ((offset[0] * 12 * 3 * 2 * (this.shape[0] * this.shape[1])) + (offset[1] * 12 * 3 * 2 * this.shape[2]) + (offset[2] * 12 * 3 * 2))
 
-  var p3 = offsetptr * 3 * 3, p2 = offsetptr * 3 * 2
   for (var i = 0; i < data.length; i += 8) {
     var x = data[i + 0], y = data[i + 1], z = data[i + 2], ao = data[i + 3]
     var nx = data[i + 4], ny = data[i + 5], nz = data[i + 6], tid = data[i + 7]
 
-    tid = tileid
-
     attrib0s[p2 + 0] = ao
     attrib0s[p2 + 1] = tid
 
-    positions[p3 + 0] = x + (this.shape[0] * (pos[0] + dist))
-    positions[p3 + 1] = y + (this.shape[1] * (pos[1] + dist))
-    positions[p3 + 2] = z + (this.shape[2] * (pos[2] + dist))
+    positions[p3 + 0] = x + offset[0]
+    positions[p3 + 1] = y + offset[1]
+    positions[p3 + 2] = z + offset[2]
 
     normals[p3 + 0] = nx
     normals[p3 + 1] = ny
@@ -116,6 +107,34 @@ ND3.prototype.chunk = function(pos, arr) {
   Object.keys(this.geometry.attributes).forEach(function(key) {
     self.geometry.attributes[key].needsUpdate = true
   })
+}
+
+ND3.prototype.generate = function(lo, hi, fn) {
+  lo[0]--
+  lo[1]--
+  lo[2]--
+  hi[0]++
+  hi[1]++
+  hi[2]++
+  var dims = [hi[0]-lo[0], hi[1]-lo[1], hi[2]-lo[2]]
+  var data = ndarray(new Uint16Array(dims[0] * dims[1] * dims[2]), dims)
+  for (var n = 0, k = lo[2]; k < hi[2]; k++)
+    for (var j = lo[1]; j < hi[1]; j++)
+      for(var i = lo[0]; i < hi[0]; i++, n++)
+        data.data[n] = fn(i, j, k, n)
+  return data
+}
+
+ND3.prototype.bounds = function(pos) {
+  var x = pos[0]
+  var y = pos[1]
+  var z = pos[2]
+  var bits = 0
+  for (var size = 32; size > 0; size >>= 1) bits++
+  bits--
+  var low = [x << bits, y << bits, z << bits]
+  var high = [(x+1) << bits, (y+1) << bits, (z+1) << bits]
+  return [low, high]
 }
 
 function reshapeTileMap(tiles) {
@@ -132,8 +151,7 @@ ND3.prototype.createMesh = function(opts) {
   var offset = opts.offset || [1, 1, 1]
   var pad = opts.pad !== false
 
-  geometry.computeBoundingBox()
-  geometry.computeBoundingSphere()
+  this.geometry.boundingBox = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(12 * 32, 12 * 32, 12 * 32))
 
   if (texture) {
     var pyramid = tileMipMap(texture, pad)
