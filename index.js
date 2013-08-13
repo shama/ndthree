@@ -9,13 +9,12 @@ var fsh = fs.readFileSync(__dirname + '/shaders/ao.fsh')
 
 function ND3(opts) {
   opts = opts || {}
-  this.chunks = opts.chunks || 2
-  this.shape = opts.shape || [32, 32, 32]
+  this.chunkShape = opts.chunkShape || [32, 32, 32]
+  var triangles = opts.size || 12 * 32 * 32 * 32
   this.geometry = opts.geometry || {}
   this.material = opts.material || {}
-
-  // 12 triangles per cube * cubes per chunk
-  var triangles = 12 * this.shape[0] * this.shape[1] * this.shape[2] * this.chunks
+  this._p3 = 0
+  this._p2 = 0
 
   this.geometry.attributes = {
     index: {
@@ -81,27 +80,28 @@ ND3.prototype.chunk = function(pos, arr) {
   var attrib0s = this.geometry.attributes.attrib0.array
 
   var dist = 0
-  var offset = [this.shape[0] * pos[0], this.shape[1] * pos[1], this.shape[2] * pos[2]]
-  var p3 = ((offset[0] * 12 * 3 * 3 * (this.shape[0] * this.shape[1])) + (offset[1] * 12 * 3 * 3 * this.shape[2]) + (offset[2] * 12 * 3 * 3))
-  var p2 = ((offset[0] * 12 * 3 * 2 * (this.shape[0] * this.shape[1])) + (offset[1] * 12 * 3 * 2 * this.shape[2]) + (offset[2] * 12 * 3 * 2))
+  var offset = [this.chunkShape[0] * pos[0], this.chunkShape[1] * pos[1], this.chunkShape[2] * pos[2]]
 
   for (var i = 0; i < data.length; i += 8) {
     var x = data[i + 0], y = data[i + 1], z = data[i + 2], ao = data[i + 3]
     var nx = data[i + 4], ny = data[i + 5], nz = data[i + 6], tid = data[i + 7]
 
-    attrib0s[p2 + 0] = ao
-    attrib0s[p2 + 1] = tid
+    attrib0s[this._p2 + 0] = ao
+    attrib0s[this._p2 + 1] = tid
 
-    positions[p3 + 0] = x + offset[0]
-    positions[p3 + 1] = y + offset[1]
-    positions[p3 + 2] = z + offset[2]
+    positions[this._p3 + 0] = x + offset[0]
+    positions[this._p3 + 1] = y + offset[1]
+    positions[this._p3 + 2] = z + offset[2]
 
-    normals[p3 + 0] = nx
-    normals[p3 + 1] = ny
-    normals[p3 + 2] = nz
+    normals[this._p3 + 0] = nx
+    normals[this._p3 + 1] = ny
+    normals[this._p3 + 2] = nz
 
-    p3 += 3
-    p2 += 2
+    if (this._p3 > positions.length) this._p3 = 0
+    else this._p3 += 3
+
+    if (this._p2 > attrib0s.length) this._p2 = 0
+    else this._p2 += 2
   }
 
   Object.keys(this.geometry.attributes).forEach(function(key) {
@@ -151,7 +151,8 @@ ND3.prototype.createMesh = function(opts) {
   var offset = opts.offset || [1, 1, 1]
   var pad = opts.pad !== false
 
-  this.geometry.boundingBox = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(12 * 32, 12 * 32, 12 * 32))
+  this.geometry.computeBoundingSphere()
+  this.geometry.boundingSphere.radius = 999999
 
   if (texture) {
     var pyramid = tileMipMap(texture, pad)
